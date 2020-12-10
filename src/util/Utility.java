@@ -23,16 +23,17 @@ public class Utility {
     public static HashMap<String, String> reqHeaders = new HashMap<>();
     private static byte[] quota_exceeded = null;
 
-    public static void checkStartupArgs(String[] args){
-        if(args.length == 0) Printer.printToLog("No startup params given", Printer.LOGTYPE.INFO);
-        boolean isPassword = false;
-        for (int i = 0; i < args.length; i++){
-            if(args[i].startsWith("-")){
-                switch(args[i]){
+    public static void checkStartupArgs(final String[] args) {
+        if (args.length == 0)
+            Printer.printToLog("No startup params given", Printer.LOGTYPE.INFO);
+        final boolean isPassword = false;
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].startsWith("-")) {
+                switch (args[i]) {
                     case "-p":
-                        String path = getNextIfExistent(args, i);
-                        File file = new File(path);
-                        if(file.exists()) {
+                        final String path = getNextIfExistent(args, i);
+                        final File file = new File(path);
+                        if (file.exists()) {
                             Main.repositoryPath = path;
                         } else {
                             Printer.printError("Invalid path " + path);
@@ -41,8 +42,8 @@ public class Utility {
                         break;
                     case "-headers":
                         Main.pathToReqHeaders = getNextIfExistent(args, i);
-                        File file2 = new File(Main.pathToReqHeaders);
-                        if(!file2.exists()) {
+                        final File file2 = new File(Main.pathToReqHeaders);
+                        if (!file2.exists()) {
                             Printer.printError("Invalid path " + Main.pathToReqHeaders);
                             System.exit(1);
                         }
@@ -67,63 +68,61 @@ public class Utility {
             Printer.printToLog("Found startup param " + args[i], Printer.LOGTYPE.INFO);
         }
 
-        if(Main.repositoryPath.equals("")) {
+        if (Main.repositoryPath.equals("")) {
             Printer.printError("No repository path supplied!");
             System.exit(1);
         }
-        if(Main.db_host == null || Main.db_pass == null ||Main.db_user == null || Main.db_schema == null){
+        if (Main.db_host == null || Main.db_pass == null || Main.db_user == null || Main.db_schema == null) {
             Printer.printError("Insufficient database information supplied!");
             System.exit(1);
         }
     }
 
-    public static void readReqHeaders(){
-        File file = new File(Main.pathToReqHeaders);
-
+    public static void readReqHeaders() {
+        final File file = new File(Main.pathToReqHeaders);
 
         try (Stream<String> stream = Files.lines(Paths.get(file.getPath()))) {
             stream.forEach(entry -> {
-                String[] tmp = entry.split("=====");
-                if(tmp.length == 2) {
+                final String[] tmp = entry.split("=====");
+                if (tmp.length == 2) {
                     reqHeaders.put(tmp[0], tmp[1]);
                 }
             });
-        } catch (Exception e){
+        } catch (final Exception e) {
             Printer.printException(e);
             e.printStackTrace();
             System.exit(1);
         }
     }
 
-    private static String getNextIfExistent(String[] args, int index){
-        if(index >= args.length - 1) {
+    private static String getNextIfExistent(final String[] args, final int index) {
+        if (index >= args.length - 1) {
             Printer.printError("Invalid params");
             System.exit(1);
             return null;
         } else {
-            return args[index+1];
+            return args[index + 1];
         }
     }
 
-    public static int getSize(String pathToDir) {
+    public static int getSize(final String pathToDir) {
         return Objects.requireNonNull(new File(pathToDir).list()).length;
     }
 
-    public static int getSize(ResultSet resultSet) throws SQLException {
+    public static int getSize(final ResultSet resultSet) throws SQLException {
         resultSet.last();
-        int size = resultSet.getRow();
+        final int size = resultSet.getRow();
         resultSet.beforeFirst();
         return size;
     }
 
-
-    public static String hashSHA256(String strToHash) {
+    public static String hashSHA256(final String strToHash) {
         String hash = "";
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hashBytes = digest.digest(strToHash.getBytes(StandardCharsets.UTF_8));
+            final MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            final byte[] hashBytes = digest.digest(strToHash.getBytes(StandardCharsets.UTF_8));
             hash = bytesToHex(hashBytes);
-        } catch (NoSuchAlgorithmException e) {
+        } catch (final NoSuchAlgorithmException e) {
             Printer.printException(e);
             e.printStackTrace();
             System.exit(1);
@@ -131,25 +130,25 @@ public class Utility {
         return hash;
     }
 
-    public static String bytesToHex(byte[] bytes) {
-        char[] hexChars = new char[bytes.length * 2];
+    public static String bytesToHex(final byte[] bytes) {
+        final char[] hexChars = new char[bytes.length * 2];
         for (int j = 0; j < bytes.length; j++) {
-            int v = bytes[j] & 0xFF;
+            final int v = bytes[j] & 0xFF;
             hexChars[j * 2] = HEX_ARRAY[v >>> 4];
             hexChars[j * 2 + 1] = HEX_ARRAY[v & 0x0F];
         }
         return new String(hexChars);
     }
 
-    public static boolean isQuotaExceeded(File file) throws Exception {
-        byte[] f = Files.readAllBytes(Paths.get(file.getPath()));
+    public static boolean isQuotaExceeded(final File file) throws Exception {
+        final byte[] f = Files.readAllBytes(Paths.get(file.getPath()));
 
-        if(quota_exceeded == null){
-            InputStream is = Utility.class.getClassLoader().getResourceAsStream("util/quota_exceeded.gif");
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        if (quota_exceeded == null) {
+            final InputStream is = Utility.class.getClassLoader().getResourceAsStream("util/quota_exceeded.gif");
+            final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
             int nRead;
-            byte[] data = new byte[16384];
+            final byte[] data = new byte[16384];
 
             while ((nRead = is.read(data, 0, data.length)) != -1) {
                 buffer.write(data, 0, nRead);
